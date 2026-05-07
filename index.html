@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>普特絲防霾紗窗 試算</title>
+  <style>
+    :root {
+      --bg: #f4f2ec;
+      --surface: #ffffff;
+      --fg: #1a1916;
+      --muted: #6b6964;
+      --border: #ddd9d0;
+      --accent: #2d6a4f;
+      --accent2: #e8f5f0;
+      --radius: 10px;
+      --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+      overflow: hidden;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    button { font: inherit; cursor: pointer; touch-action: manipulation; }
+    input, select { font: inherit; touch-action: manipulation; }
+
+    .header {
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .header-brand { font-size: 14px; font-weight: 700; white-space: nowrap; }
+    .btn-clear {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: var(--radius);
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .sales-input {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 16px;
+      padding: 6px 8px;
+      -webkit-text-size-adjust: 100%;
+      width: 100%;
+    }
+    .sales-input::placeholder { color: rgba(255,255,255,0.6); }
+    .sales-input:focus { outline: none; border-color: rgba(255,255,255,0.7); }
+
+    .sticky-add {
+      position: sticky;
+      top: 52px;
+      z-index: 50;
+      padding: 10px 16px 6px;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .btn-add {
+      width: 100%;
+      padding: 12px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .page {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 16px 24px;
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .item-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent2);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+    .item-name-input {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      border: none;
+      background: transparent;
+      flex: 1;
+      padding: 4px 8px;
+      min-width: 0;
+    }
+    .item-name-input::placeholder { color: var(--muted); font-weight: 400; }
+    .item-name-input:focus { outline: none; }
+    .btn-delete {
+      width: 30px; height: 30px;
+      border: none;
+      background: #fdf0ef;
+      color: #c0392b;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .type-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .type-btn {
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .type-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .dim-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .dim-field { display: flex; flex-direction: column; gap: 3px; }
+    .dim-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .dim-input {
+      padding: 9px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      font-size: 16px;
+      font-family: var(--font-mono);
+      text-align: center;
+      width: 100%;
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+    }
+    .dim-input:focus { outline: none; border-color: var(--accent); }
+    .dim-input::placeholder { color: #c5c0b6; font-size: 13px; }
+
+    .item-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .tsub-badge { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--accent); }
+    .tsub-badge span { font-size: 11px; color: var(--muted); font-weight: 400; }
+    .note-input {
+      font-size: 16px;
+      color: var(--muted);
+      border: none;
+      background: transparent;
+      text-align: right;
+      width: 90px;
+    }
+    .note-input::placeholder { color: #c5c0b6; }
+    .note-input:focus { outline: none; color: var(--fg); }
+
+    .summary-card {
+      background: var(--surface);
+      border: 2px solid var(--fg);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: auto;
+      flex-shrink: 0;
+    }
+    .summary-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .summary-big { font-family: var(--font-mono); font-size: 28px; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+    .summary-meta { display: flex; gap: 10px; flex-wrap: wrap; }
+    .summary-meta-item { display: flex; flex-direction: column; }
+    .summary-meta-item .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+    .summary-meta-item .val { font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+    .summary-lines { border-top: 1px solid var(--border); padding-top: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .s-line { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+    .s-line .v { font-family: var(--font-mono); color: var(--fg); }
+    .s-line.total { color: var(--fg); font-weight: 700; font-size: 14px; border-top: 1px solid var(--border); padding-top: 5px; margin-top: 2px; }
+    .s-line.section-head { font-weight: 700; color: var(--accent); }
+
+    .btn-copy {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .btn-copy.copied { background: #3a7d5c; }
+    .preview-text {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      max-height: none;
+      overflow-y: visible;
+    }
+    .empty-tip { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+    .empty-tip .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.35; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
+    <div class="header-brand">普特絲防霾紗窗</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0;">
+      <input id="sales-name" class="sales-input" placeholder="專員姓名" oninput="onHeaderInput()" />
+      <input id="sales-tel" class="sales-input" placeholder="業務電話" oninput="onHeaderInput()" />
+    </div>
+  </div>
+  <button class="btn-clear" onclick="clearAll()">清除</button>
+</header>
+
+<div class="sticky-add">
+  <button class="btn-add" onclick="addItem()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    新增品項
+  </button>
+</div>
+
+<main class="page">
+  <div id="items-container"></div>
+  <div class="empty-tip" id="empty-tip">
+    <div class="icon">📐</div>
+    輸入尺寸，立即試算報價
+  </div>
+  <div class="summary-card" id="summary-card" style="display:none;">
+    <div class="summary-head">
+      <div class="summary-big" id="s-total">$0</div>
+      <div class="summary-meta">
+        <div class="summary-meta-item"><span class="lbl">未稅</span><span class="val" id="s-sub">$0</span></div>
+        <div class="summary-meta-item"><span class="lbl">訂金</span><span class="val" id="s-dep">$0</span></div>
+        <div class="summary-meta-item"><span class="lbl">尾款</span><span class="val" id="s-bal">$0</span></div>
+        <div class="summary-meta-item"><span class="lbl">總才數</span><span class="val" id="s-tsub">0</span></div>
+      </div>
+    </div>
+    <div class="summary-lines" id="summary-lines"></div>
+    <button class="btn-copy" id="btn-copy" onclick="copyPreview()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      複製報價文字
+    </button>
+    <div class="preview-text" id="preview-text"></div>
+  </div>
+</main>
+
+<script>
+  var TSUBS_DIV = 900;
+  var EXTRA_CM  = 20;
+  var MIN_TSUB  = 8;
+  var MIN_FEE   = 4500;
+  var TAX_RATE  = 0.05;
+
+  var PRICES = {
+    FLAT:  { label: '平紗',   mech: 0,    paint: 0,   mesh: 435, labor: 90 },
+    ROLL:  { label: '捲紗',   mech: 500,  paint: 300, mesh: 435, labor: 90 },
+    RFW:   { label: 'RFW 日式', mech: 1020, paint: 500, mesh: 435, labor: 90 }
+  };
+
+  var items = [];
+  var nextId = 1;
+  var defaultType = 'FLAT';
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fmt(n) { return '$' + Math.round(n).toLocaleString('zh-TW'); }
+
+  function calcTsubs(w, h) {
+    w = parseFloat(w) || 0;
+    h = parseFloat(h) || 0;
+    if (w <= 0 || h <= 0) return 0;
+    return ((w + EXTRA_CM) * (h + EXTRA_CM)) / TSUBS_DIV;
+  }
+
+  function addItem() {
+    items.push({ id: nextId++, name: '', type: defaultType, qty: 1, w: '', h: '', note: '' });
+    render();
+    setTimeout(function() {
+      var el = document.getElementById('item-' + (nextId - 1));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  }
+
+  function removeItem(id) {
+    items = items.filter(function(i) { return i.id !== id; });
+    render();
+  }
+
+  function setType(id, type) {
+    var item = items.filter(function(i) { return i.id === id; })[0];
+    if (!item) return;
+    item.type = type;
+    render();
+  }
+
+  function updateField(id, field, val) {
+    var item = items.filter(function(i) { return i.id === id; })[0];
+    if (!item) return;
+    item[field] = val;
+    if (field === 'w' || field === 'h') {
+      var el = document.getElementById('tsub-' + id);
+      if (el) {
+        var t = calcTsubs(field === 'w' ? val : item.w, field === 'w' ? item.h : val);
+        el.textContent = t > 0 ? t.toFixed(1) : '—';
+      }
+    }
+    updateSummary();
+  }
+
+  function onHeaderInput() {
+    updateSummary();
+  }
+
+  function render() {
+    var container = document.getElementById('items-container');
+    var emptyTip = document.getElementById('empty-tip');
+    var summaryCard = document.getElementById('summary-card');
+
+    if (items.length === 0) {
+      container.innerHTML = '';
+      emptyTip.style.display = 'block';
+      summaryCard.style.display = 'none';
+    } else {
+      emptyTip.style.display = 'none';
+      summaryCard.style.display = 'block';
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var typeBtns = '';
+        var types = ['FLAT', 'ROLL', 'RFW'];
+        for (var j = 0; j < types.length; j++) {
+          var t = types[j];
+          var active = item.type === t ? ' active' : '';
+          typeBtns += '<button class="type-btn' + active + '" onclick="setType(' + item.id + ',\'' + t + '\')">' + PRICES[t].label + '</button>';
+        }
+        var tsubVal = item.w && item.h ? calcTsubs(item.w, item.h).toFixed(1) : '—';
+        html += '<div class="item-card" id="item-' + item.id + '">' +
+          '<div class="item-top">' +
+            '<span class="item-num">' + (i + 1) + '</span>' +
+            '<input class="item-name-input" placeholder="地點，如：主臥窗" value="' + esc(item.name) + '" oninput="updateField(' + item.id + ',\'name\',this.value)" />' +
+            '<button class="btn-delete" onclick="removeItem(' + item.id + ')">' +
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>' +
+            '</button>' +
+          '</div>' +
+          '<div class="type-row">' + typeBtns + '</div>' +
+          '<div class="dim-row">' +
+            '<div class="dim-field"><span class="dim-label">數量</span>' +
+              '<input class="dim-input" type="number" min="1" placeholder="數量" value="' + (item.qty || '') + '" oninput="updateField(' + item.id + ',\'qty\',this.value)" /></div>' +
+            '<div class="dim-field"><span class="dim-label">寬 (cm)</span>' +
+              '<input class="dim-input" type="number" min="1" placeholder="cm" value="' + esc(item.w) + '" oninput="updateField(' + item.id + ',\'w\',this.value)" /></div>' +
+            '<div class="dim-field"><span class="dim-label">高 (cm)</span>' +
+              '<input class="dim-input" type="number" min="1" placeholder="cm" value="' + esc(item.h) + '" oninput="updateField(' + item.id + ',\'h\',this.value)" /></div>' +
+          '</div>' +
+          '<div class="item-foot">' +
+            '<div class="tsub-badge"><span id="tsub-' + item.id + '">' + tsubVal + '</span><span> 才</span></div>' +
+            '<input class="note-input" placeholder="備註" value="' + esc(item.note) + '" oninput="updateField(' + item.id + ',\'note\',this.value)" />' +
+          '</div>' +
+        '</div>';
+      }
+      container.innerHTML = html;
+    }
+    updateSummary();
+  }
+
+  function updateSummary() {
+    var byType = {
+      FLAT: { mech: 0, paint: 0, mesh: 0, labor: 0, tsub: 0 },
+      ROLL: { mech: 0, paint: 0, mesh: 0, labor: 0, tsub: 0 },
+      RFW:  { mech: 0, paint: 0, mesh: 0, labor: 0, tsub: 0 }
+    };
+    var lines = [];
+
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var rawTsub = calcTsubs(item.w, item.h);
+      if (rawTsub <= 0) continue;
+      var tsub = Math.max(rawTsub, MIN_TSUB);
+      var qty = parseInt(item.qty) || 1;
+      var p = PRICES[item.type];
+      if (!p) continue;
+      byType[item.type].mech   += p.mech  * tsub * qty;
+      byType[item.type].paint  += p.paint * tsub * qty;
+      byType[item.type].mesh   += p.mesh  * tsub * qty;
+      byType[item.type].tsub  += tsub * qty;
+      var name = item.name || ('品項' + (i + 1));
+      lines.push({ name: name, label: p.label, qty: qty, tsub: tsub, type: item.type });
+    }
+
+    var flat = byType.FLAT;
+    var roll = byType.ROLL;
+    var rfw  = byType.RFW;
+    var totalTsub = flat.tsub + roll.tsub + rfw.tsub;
+    var flatSt  = flat.mech + flat.paint + flat.mesh;
+    var rollSt  = roll.mech + roll.paint + roll.mesh;
+    var rfwSt   = rfw.mech  + rfw.paint  + rfw.mesh;
+    var subtotal = flatSt + rollSt + rfwSt;
+
+    // 施工費：全部品項總才數，< 50才 = 4500；否則 = 總才數 × 90
+    var laborFee = totalTsub > 0 ? (totalTsub >= 50 ? totalTsub * 90 : MIN_FEE) : 0;
+    subtotal += laborFee;
+
+    // 各類型施工費攤提
+    var flatLabor = totalTsub > 0 ? Math.round(laborFee * flat.tsub / totalTsub) : 0;
+    var rollLabor = totalTsub > 0 ? Math.round(laborFee * roll.tsub / totalTsub) : 0;
+    var rfwLabor = totalTsub > 0 ? Math.round(laborFee * rfw.tsub / totalTsub) : 0;
+
+    var tax  = Math.round(subtotal * TAX_RATE);
+    var total = subtotal + tax;
+    var flatDep  = Math.round((flatSt + flatLabor) * 0.10);
+    var rollDep  = Math.round((rollSt + rollLabor) * 0.70);
+    var rfwDep   = Math.round((rfwSt  + rfwLabor) * 0.70);
+    var totalDep = flatDep + rollDep + rfwDep;
+
+    document.getElementById('s-total').textContent = fmt(total);
+    document.getElementById('s-sub').textContent  = fmt(subtotal);
+    document.getElementById('s-dep').textContent  = fmt(totalDep);
+    document.getElementById('s-bal').textContent  = fmt(total - totalDep);
+    document.getElementById('s-tsub').textContent = totalTsub.toFixed(1) + ' 才';
+
+    var sl = document.getElementById('summary-lines');
+    var h = '';
+    if (totalTsub > 0) {
+      if (rfw.tsub > 0) {
+        h += '<div class="s-line section-head">◆ RFW 日式</div>';
+        h += '<div class="s-line"><span>機構 $1020/才 × ' + rfw.tsub.toFixed(1) + '才</span><span class="v">' + fmt(rfw.mech) + '</span></div>';
+        h += '<div class="s-line"><span>烤漆 $500/才 × ' + rfw.tsub.toFixed(1) + '才</span><span class="v">' + fmt(rfw.paint) + '</span></div>';
+        h += '<div class="s-line"><span>紗網 $435/才 × ' + rfw.tsub.toFixed(1) + '才</span><span class="v">' + fmt(rfw.mesh) + '</span></div>';
+      }
+      if (roll.tsub > 0) {
+        h += '<div class="s-line section-head">◆ 捲紗</div>';
+        h += '<div class="s-line"><span>機構 $500/才 × ' + roll.tsub.toFixed(1) + '才</span><span class="v">' + fmt(roll.mech) + '</span></div>';
+        h += '<div class="s-line"><span>烤漆 $300/才 × ' + roll.tsub.toFixed(1) + '才</span><span class="v">' + fmt(roll.paint) + '</span></div>';
+        h += '<div class="s-line"><span>紗網 $435/才 × ' + roll.tsub.toFixed(1) + '才</span><span class="v">' + fmt(roll.mesh) + '</span></div>';
+      }
+      if (flat.tsub > 0) {
+        h += '<div class="s-line section-head">◆ 平紗</div>';
+        h += '<div class="s-line"><span>紗網 $435/才 × ' + flat.tsub.toFixed(1) + '才</span><span class="v">' + fmt(flat.mesh) + '</span></div>';
+      }
+      var laborLabel = laborFee === MIN_FEE
+        ? '施工費（低於50才）'
+        : '施工費 $90/才 × ' + totalTsub.toFixed(1) + ' 才';
+      h += '<div class="s-line"><span>' + laborLabel + '</span><span class="v">' + fmt(laborFee) + '</span></div>';
+      h += '<div class="s-line total"><span>含稅總計</span><span class="v">' + fmt(total) + '</span></div>';
+    }
+    sl.innerHTML = h;
+
+    generatePreview(lines, byType, subtotal, tax, total, flatSt, rollSt, rfwSt, flatDep, rollDep, rfwDep, totalDep, laborFee, totalTsub);
+  }
+
+  function generatePreview(lines, byType, subtotal, tax, total, flatSt, rollSt, rfwSt, flatDep, rollDep, rfwDep, totalDep, laborFee, totalTsub) {
+    var el = document.getElementById('preview-text');
+    var flat = byType.FLAT, roll = byType.ROLL, rfw = byType.RFW;
+    if (totalTsub === 0) { el.textContent = ''; return; }
+
+    var today = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    var name = (document.getElementById('sales-name').value || '【姓名】');
+    var tel  = (document.getElementById('sales-tel').value  || '【電話】');
+
+    var text = '【普特絲防霾紗窗 報價單】專員' + name + '\n';
+    text += '常順地產南桃園經銷商　' + tel + '\n';
+    text += '日期：' + today + '\n';
+    text += '─────────────────────\n';
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i];
+      text += l.name + '　' + l.label + '　' + l.qty + '扇　' + l.tsub.toFixed(1) + '才\n';
+    }
+    text += '─────────────────────\n';
+    text += '總才數：' + totalTsub.toFixed(1) + ' 才\n';
+
+    // 計算各類型施工費攤提
+    var flatLabor = totalTsub > 0 ? Math.round(laborFee * flat.tsub / totalTsub) : 0;
+    var rollLabor = totalTsub > 0 ? Math.round(laborFee * roll.tsub / totalTsub) : 0;
+    var rfwLabor = totalTsub > 0 ? Math.round(laborFee * rfw.tsub / totalTsub) : 0;
+
+    if (rfw.tsub > 0) {
+      text += '\n◆ RFW 日式（70% 訂金）\n';
+      if (rfw.mech  > 0) text += '機構：' + fmt(rfw.mech) + '（$1020/才）\n';
+      if (rfw.paint > 0) text += '烤漆：' + fmt(rfw.paint) + '（$500/才）\n';
+      text += '紗網：' + fmt(rfw.mesh) + '（$435/才）\n';
+      text += '施工：' + fmt(rfwLabor) + '（$90/才）\n';
+      text += 'RFW 小計：' + fmt(rfwSt + rfwLabor) + '\n';
+    }
+    if (roll.tsub > 0) {
+      text += '\n◆ 捲紗（70% 訂金）\n';
+      if (roll.mech  > 0) text += '機構：' + fmt(roll.mech) + '（$500/才）\n';
+      if (roll.paint > 0) text += '烤漆：' + fmt(roll.paint) + '（$300/才）\n';
+      text += '紗網：' + fmt(roll.mesh) + '（$435/才）\n';
+      text += '施工：' + fmt(rollLabor) + '（$90/才）\n';
+      text += '捲紗 小計：' + fmt(rollSt + rollLabor) + '\n';
+    }
+    if (flat.tsub > 0) {
+      text += '\n◆ 平紗（10% 訂金）\n';
+      text += '紗網：' + fmt(flat.mesh) + '（$435/才）\n';
+      text += '施工：' + fmt(flatLabor) + '（$90/才）\n';
+      text += '平紗 小計：' + fmt(flatSt + flatLabor) + '\n';
+    }
+
+    text += '\n─────────────────────\n';
+    text += '未稅合計（料）：' + fmt(subtotal - laborFee) + '\n';
+    text += '施工費：' + fmt(laborFee) + '\n';
+    text += '未稅合計：' + fmt(subtotal) + '\n';
+    text += '營業稅(5%)：' + fmt(tax) + '\n';
+    text += '含稅總計：' + fmt(total) + '\n';
+    text += '─────────────────────\n';
+    text += '◆ 訂金明細\n';
+    var flatStWithLabor = flatSt + flatLabor;
+    var rollStWithLabor = rollSt + rollLabor;
+    var rfwStWithLabor = rfwSt + rfwLabor;
+    var flatDep2  = Math.round(flatStWithLabor * 0.10);
+    var rollDep2  = Math.round(rollStWithLabor * 0.70);
+    var rfwDep2   = Math.round(rfwStWithLabor * 0.70);
+    var totalDep2 = flatDep2 + rollDep2 + rfwDep2;
+    if (rfw.tsub  > 0) text += 'RFW 訂金（70%）：' + fmt(rfwDep2) + '\n';
+    if (roll.tsub > 0) text += '捲紗 訂金（70%）：' + fmt(rollDep2) + '\n';
+    if (flat.tsub > 0) text += '平紗 訂金（10%）：' + fmt(flatDep2) + '\n';
+    text += '─────────────────────\n';
+    text += '訂金總計：' + fmt(totalDep2) + '\n';
+    text += '尾款合計：' + fmt(total - totalDep2) + '\n';
+    text += '─────────────────────\n';
+    text += '※ 文量依窗型外框長寬各+20cm計算\n';
+    if (laborFee === MIN_FEE) {
+      text += '※ 施工費低於50才，以最低工資 $4,500 計\n';
+    } else {
+      text += '※ 施工費 $90/才 × ' + totalTsub.toFixed(1) + ' 才\n';
+    }
+    text += '※ 甲方收到定金後訂單成立，定金恕不退還';
+
+    el.textContent = text;
+  }
+
+  function copyPreview() {
+    var text = document.getElementById('preview-text').textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(function() {
+      var btn = document.getElementById('btn-copy');
+      btn.classList.add('copied');
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>已複製！';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>複製報價文字';
+      }, 2000);
+    });
+  }
+
+  function clearAll() {
+    if (items.length && !confirm('確定清除所有品項？')) return;
+    items = [];
+    render();
+  }
+
+  // init
+  addItem();
+</script>
+</body>
+</html>
