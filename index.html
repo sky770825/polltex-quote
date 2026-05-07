@@ -516,57 +516,64 @@
     var name = (document.getElementById('sales-name').value || '【姓名】');
     var tel  = (document.getElementById('sales-tel').value  || '【電話】');
 
-    var text = '【普特絲防霾紗窗 報價單】專員' + name + '\n';
-    text += '常順地產南桃園經銷商　' + tel + '\n';
+    var flatLabor = totalTsub > 0 ? Math.round(laborFee * flat.tsub / totalTsub) : 0;
+    var rollLabor = totalTsub > 0 ? Math.round(laborFee * roll.tsub / totalTsub) : 0;
+    var rfwLabor  = totalTsub > 0 ? Math.round(laborFee * rfw.tsub  / totalTsub) : 0;
+
+    var sep = '\n━━━━━━━━━━━━\n';
+
+    var text = '【普特絲防霾紗窗報價單】\n';
+    text += '常順地產｜南桃園經銷商\n';
+    text += '專員：' + name + '｜' + tel + '\n';
     text += '日期：' + today + '\n';
-    text += '─────────────────────\n';
-    // 列出客戶品項（含價格）
+    text += sep;
+
     for (var i = 0; i < lines.length; i++) {
       var l = lines[i];
       var p = PRICES[l.type];
-      var itemMech = p.mech * l.tsub * l.qty;
-      var itemPaint = p.paint * l.tsub * l.qty;
-      var itemMesh = p.mesh * l.tsub * l.qty;
-      var itemLabor = Math.round((laborFee * l.tsub * l.qty) / totalTsub);
-      var itemSt = itemMech + itemPaint + itemMesh + itemLabor;
-      var itemParts = '';
+      var itemMech   = p.mech   * l.tsub * l.qty;
+      var itemPaint  = p.paint  * l.tsub * l.qty;
+      var itemMesh   = p.mesh   * l.tsub * l.qty;
+      var itemLabor  = Math.round((laborFee * l.tsub * l.qty) / totalTsub);
+      var itemSt     = itemMech + itemPaint + itemMesh + itemLabor;
+      var num = '①②③'[i];
+
       if (l.type === 'RFW') {
-        itemParts = '機構' + fmt(itemMech) + ' + 烤漆' + fmt(itemPaint) + ' + 紗網' + fmt(itemMesh);
+        text += num + 'RFW日式 ' + l.tsub.toFixed(1) + '才\n';
+        text += '機構' + fmt(itemMech) + '｜烤漆' + fmt(itemPaint) + '\n';
+        text += '紗網' + fmt(itemMesh) + '｜施工' + fmt(itemLabor) + '\n';
+        text += '小計：' + fmt(itemSt) + '元\n';
       } else if (l.type === 'ROLL') {
-        itemParts = '機構' + fmt(itemMech) + ' + 烤漆' + fmt(itemPaint) + ' + 紗網' + fmt(itemMesh);
+        text += num + '捲紗 ' + l.tsub.toFixed(1) + '才\n';
+        text += '機構' + fmt(itemMech) + '｜烤漆' + fmt(itemPaint) + '\n';
+        text += '紗網' + fmt(itemMesh) + '｜施工' + fmt(itemLabor) + '\n';
+        text += '小計：' + fmt(itemSt) + '元\n';
       } else {
-        itemParts = '紗網' + fmt(itemMesh);
+        text += num + '平紗 ' + l.tsub.toFixed(1) + '才\n';
+        text += '紗網' + fmt(itemMesh) + '｜施工' + fmt(itemLabor) + '\n';
+        text += '小計：' + fmt(itemSt) + '元\n';
       }
-      text += l.name + '　' + l.label + '　' + l.qty + '樘　' + l.tsub.toFixed(1) + '才\n';
-      text += '  ' + itemParts + ' + 施工' + fmt(itemLabor) + ' = ' + fmt(itemSt) + '\n';
+      if (i < lines.length - 1) text += sep.replace('\n', '\n'); // 品項間加分隔線（不重複換行）
     }
-    text += '─────────────────────\n';
-    text += '未稅合計：' + fmt(subtotal) + '\n';
-    text += '營業稅(5%)：' + fmt(tax) + '\n';
-    text += '含稅總計：' + fmt(total) + '\n';
-    text += '─────────────────────\n';
-    text += '◆ 訂金明細\n';
-    var flatStWithLabor = flatSt + flatLabor;
-    var rollStWithLabor = rollSt + rollLabor;
-    var rfwStWithLabor = rfwSt + rfwLabor;
-    var flatDep2  = Math.round(flatStWithLabor * 0.10);
-    var rollDep2  = Math.round(rollStWithLabor * 0.70);
-    var rfwDep2   = Math.round(rfwStWithLabor * 0.70);
-    var totalDep2 = flatDep2 + rollDep2 + rfwDep2;
-    if (rfw.tsub  > 0) text += 'RFW 訂金（70%）：' + fmt(rfwDep2) + '\n';
-    if (roll.tsub > 0) text += '捲紗 訂金（70%）：' + fmt(rollDep2) + '\n';
-    if (flat.tsub > 0) text += '平紗 訂金（10%）：' + fmt(flatDep2) + '\n';
-    text += '─────────────────────\n';
-    text += '訂金總計：' + fmt(totalDep2) + '\n';
-    text += '尾款合計：' + fmt(total - totalDep2) + '\n';
-    text += '─────────────────────\n';
-    text += '※ 文量依窗型外框長寬各+20cm計算\n';
+
+    text += sep;
+    text += '未稅合計：' + fmt(subtotal) + '元\n';
+    text += '營業稅5%：' + fmt(tax) + '元\n';
+    text += '含稅總計：' + fmt(total) + '元\n';
+    text += sep;
+    text += '💳 付款明細\n';
+    text += '訂金：' + fmt(totalDep) + '元\n';
+    text += '尾款：' + fmt(total - totalDep) + '元\n';
+    text += '註：捲紗/RFW訂金70%，平紗10%\n';
+    text += sep;
+    text += '※才數依外框長寬各+20cm計\n';
     if (laborFee === MIN_FEE) {
-      text += '※ 施工費低於50才，以最低工資 $4,500 計\n';
+      text += '※施工費未滿50才以4,500元計\n';
     } else {
-      text += '※ 施工費 $90/才 × ' + totalTsub.toFixed(1) + ' 才\n';
+      text += '※施工費$90/才×' + totalTsub.toFixed(1) + '才\n';
     }
-    text += '※ 甲方收到定金後訂單成立，定金恕不退還';
+    text += '※收到訂金後訂單成立\n';
+    text += '※訂金恕不退還';
 
     el.textContent = text;
   }
