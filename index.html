@@ -557,7 +557,14 @@
     }
 
     text += sep;
-    text += '未稅合計：' + fmt(subtotal) + '元\n';
+    // 各項費用明細
+    var totalMesh = flat.mesh + roll.mesh + rfw.mesh;
+    if (totalMesh > 0)     text += '紗網材料費：' + fmt(totalMesh) + '元\n';
+    if (roll.mech  > 0)    text += '捲紗機構：' + fmt(roll.mech) + '元\n';
+    if (roll.paint > 0)    text += '烤漆費：' + fmt(roll.paint + rfw.paint) + '元\n';
+    if (rfw.mech  > 0)     text += 'RFW日式：' + fmt(rfw.mech) + '元\n';
+    if (rfw.paint > 0)     text += 'RFW烤漆費：' + fmt(rfw.paint) + '元\n';
+    if (laborFee  > 0)     text += '施工費用：' + fmt(laborFee) + '元\n';
     text += '營業稅5%：' + fmt(tax) + '元\n';
     text += '含稅總計：' + fmt(total) + '元\n';
     text += sep;
