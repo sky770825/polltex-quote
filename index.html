@@ -520,44 +520,27 @@
     text += '常順地產南桃園經銷商　' + tel + '\n';
     text += '日期：' + today + '\n';
     text += '─────────────────────\n';
+    // 列出客戶品項（含價格）
     for (var i = 0; i < lines.length; i++) {
       var l = lines[i];
-      text += l.name + '　' + l.label + '　' + l.qty + '扇　' + l.tsub.toFixed(1) + '才\n';
+      var p = PRICES[l.type];
+      var itemMech = p.mech * l.tsub * l.qty;
+      var itemPaint = p.paint * l.tsub * l.qty;
+      var itemMesh = p.mesh * l.tsub * l.qty;
+      var itemLabor = Math.round((laborFee * l.tsub * l.qty) / totalTsub);
+      var itemSt = itemMech + itemPaint + itemMesh + itemLabor;
+      var itemParts = '';
+      if (l.type === 'RFW') {
+        itemParts = '機構' + fmt(itemMech) + ' + 烤漆' + fmt(itemPaint) + ' + 紗網' + fmt(itemMesh);
+      } else if (l.type === 'ROLL') {
+        itemParts = '機構' + fmt(itemMech) + ' + 烤漆' + fmt(itemPaint) + ' + 紗網' + fmt(itemMesh);
+      } else {
+        itemParts = '紗網' + fmt(itemMesh);
+      }
+      text += l.name + '　' + l.label + '　' + l.qty + '樘　' + l.tsub.toFixed(1) + '才\n';
+      text += '  ' + itemParts + ' + 施工' + fmt(itemLabor) + ' = ' + fmt(itemSt) + '\n';
     }
     text += '─────────────────────\n';
-    text += '總才數：' + totalTsub.toFixed(1) + ' 才\n';
-
-    // 計算各類型施工費攤提
-    var flatLabor = totalTsub > 0 ? Math.round(laborFee * flat.tsub / totalTsub) : 0;
-    var rollLabor = totalTsub > 0 ? Math.round(laborFee * roll.tsub / totalTsub) : 0;
-    var rfwLabor = totalTsub > 0 ? Math.round(laborFee * rfw.tsub / totalTsub) : 0;
-
-    if (rfw.tsub > 0) {
-      text += '\n◆ RFW 日式（70% 訂金）\n';
-      if (rfw.mech  > 0) text += '機構：' + fmt(rfw.mech) + '（$1020/才）\n';
-      if (rfw.paint > 0) text += '烤漆：' + fmt(rfw.paint) + '（$500/才）\n';
-      text += '紗網：' + fmt(rfw.mesh) + '（$435/才）\n';
-      text += '施工：' + fmt(rfwLabor) + '（$90/才）\n';
-      text += 'RFW 小計：' + fmt(rfwSt + rfwLabor) + '\n';
-    }
-    if (roll.tsub > 0) {
-      text += '\n◆ 捲紗（70% 訂金）\n';
-      if (roll.mech  > 0) text += '機構：' + fmt(roll.mech) + '（$500/才）\n';
-      if (roll.paint > 0) text += '烤漆：' + fmt(roll.paint) + '（$300/才）\n';
-      text += '紗網：' + fmt(roll.mesh) + '（$435/才）\n';
-      text += '施工：' + fmt(rollLabor) + '（$90/才）\n';
-      text += '捲紗 小計：' + fmt(rollSt + rollLabor) + '\n';
-    }
-    if (flat.tsub > 0) {
-      text += '\n◆ 平紗（10% 訂金）\n';
-      text += '紗網：' + fmt(flat.mesh) + '（$435/才）\n';
-      text += '施工：' + fmt(flatLabor) + '（$90/才）\n';
-      text += '平紗 小計：' + fmt(flatSt + flatLabor) + '\n';
-    }
-
-    text += '\n─────────────────────\n';
-    text += '未稅合計（料）：' + fmt(subtotal - laborFee) + '\n';
-    text += '施工費：' + fmt(laborFee) + '\n';
     text += '未稅合計：' + fmt(subtotal) + '\n';
     text += '營業稅(5%)：' + fmt(tax) + '\n';
     text += '含稅總計：' + fmt(total) + '\n';
