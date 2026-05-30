@@ -443,7 +443,7 @@
       byType[item.type].mesh   += p.mesh  * tsub * qty;
       byType[item.type].tsub  += tsub * qty;
       var name = item.name || ('品項' + (i + 1));
-      lines.push({ name: name, label: p.label, qty: qty, tsub: tsub, type: item.type });
+      lines.push({ name: name, label: p.label, qty: qty, tsub: tsub, type: item.type, w: item.w, h: item.h });
     }
 
     var flat = byType.FLAT;
@@ -536,20 +536,22 @@
       var itemMesh   = p.mesh   * l.tsub * l.qty;
       var itemLabor  = Math.round((laborFee * l.tsub * l.qty) / totalTsub);
       var itemSt     = itemMech + itemPaint + itemMesh + itemLabor;
-      var num = '①②③'[i];
+      var dimText = l.w && l.h ? String(parseFloat(l.w) + EXTRA_CM) + 'x' + String(parseFloat(l.h) + EXTRA_CM) + '=' + l.tsub.toFixed(1) + '才' : l.tsub.toFixed(1) + '才';
+      var qtyText = l.qty > 1 ? ' ×' + l.qty : '';
+      var itemTitle = l.name + p.label + ' ' + dimText + qtyText;
 
       if (l.type === 'RFW') {
-        text += num + 'RFW日式 ' + l.tsub.toFixed(1) + '才\n';
+        text += itemTitle + '\n';
         text += '機構' + fmt(itemMech) + '｜烤漆' + fmt(itemPaint) + '\n';
         text += '紗網' + fmt(itemMesh) + '｜施工' + fmt(itemLabor) + '\n';
         text += '小計：' + fmt(itemSt) + '元\n';
       } else if (l.type === 'ROLL') {
-        text += num + '捲紗 ' + l.tsub.toFixed(1) + '才\n';
+        text += itemTitle + '\n';
         text += '機構' + fmt(itemMech) + '｜烤漆' + fmt(itemPaint) + '\n';
         text += '紗網' + fmt(itemMesh) + '｜施工' + fmt(itemLabor) + '\n';
         text += '小計：' + fmt(itemSt) + '元\n';
       } else {
-        text += num + '平紗 ' + l.tsub.toFixed(1) + '才\n';
+        text += itemTitle + '\n';
         text += '紗網' + fmt(itemMesh) + '｜施工' + fmt(itemLabor) + '\n';
         text += '小計：' + fmt(itemSt) + '元\n';
       }
